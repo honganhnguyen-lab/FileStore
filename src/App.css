@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+#root .logoName  {
+  font-family: 'Lato';
+  font-style: normal;
+  color:'white';
+  font-weight: 700;
+  font-size: 26.1818px;
+  line-height: 31px;
+}
