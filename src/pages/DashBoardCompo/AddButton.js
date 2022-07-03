@@ -5,13 +5,24 @@ import {Dialog,DialogTitle, DialogContent, DialogActions, TextField, Button} fro
 import { database } from '../../Firebase';
 
 
-const DialogSetName = ({open, setOpen}) => {
+const DialogSetName = ({open, setOpen, currentFolder}) => {
+
 
     const [nameNewFolder, setNameNewFolder] = useState('');
 
     const handleSubmit = () => {
+
+      if(currentFolder == null) return
+      
        //Create a folder in the database
-        addDoc(database.folders, {name:nameNewFolder})
+        addDoc(database.folders, {
+          name: nameNewFolder,
+          parentId: currentFolder.id, 
+          userId: "Amie29", 
+          // path,
+          createdAt: database.getCurrentTimestamp
+        
+        })
 
         setOpen(false);
       };

@@ -5,39 +5,15 @@ import { Stack,Button, Grid, Typography } from '@mui/material';
 
 import FolderIcon from '@mui/icons-material/Folder';
 import DialogSetName from './DashBoardCompo/AddButton';
+import { useFolder } from '../hooks/useFolder';
 
 
 
 const AllFiles = () => {
-    const [listFolder, setListFolder] = useState([])
-    let history = useHistory();
 
-const getListFolders = async()=>{ 
-        await axios.get("http://localhost:3002/folders")
-       .then(res => {
-           setListFolder(res.data)
-       }
-       ).catch((error) =>{
-           console.log(error);
-         
-       }
-     
-)}
-
-
-
-const addNewFolders = async(name) => {
-    await axios.post("http://localhost:3002/folders", {name})
-    .then(res => {
-        console.log(res);
-        console.log(res.data);
-      })
-
-}
-
-useEffect(() => {
-    getListFolders()
-}, [])
+    const {folder, childFolders} = useFolder("ylLcObxQ1WOABdHlJ9Vu");
+   
+    console.log(childFolders);
 
 
 
@@ -50,11 +26,13 @@ return (
         + ADD FOLDER
     </Button>
 
-    <DialogSetName open={open} setOpen={setOpen}  addNewFolders={addNewFolders}/>
+    <DialogSetName open={open} setOpen={setOpen}  currentFolder={folder} />
 
     <Grid container spacing={3}>
-        {listFolder.map((item) => (
-        <Grid item md={3} xs={3} key={item.id} onClick={()=> history.push(`/folder/${item.id}`)} >
+       
+        {/* onClick={()=> history.push(`/folder/${item.id}`)} */}
+        {childFolders  && childFolders.map((item) => (
+        <Grid item md={3} xs={3} key={item.id}  >
             <Stack 
             direction="column" 
             spacing={1} 

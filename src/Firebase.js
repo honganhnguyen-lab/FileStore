@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import  {getFirestore} from "@firebase/firestore"
-import {collection} from "@firebase/firestore"
+import {collection, serverTimestamp} from "@firebase/firestore"
 import "firebase/auth"
 
 
@@ -22,7 +22,11 @@ const firestore = getFirestore(app);
 
 export const database = {
   folders: collection(firestore, 'folders'),
-  files: collection( firestore,'files')
+  files: collection( firestore,'files'),
+  formatDoc: (doc) => {
+    return {id: doc.id, ...doc.data()}
+  },
+  getCurrentTimestamp: serverTimestamp()
 }
 
 
