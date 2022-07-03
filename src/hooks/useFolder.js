@@ -1,37 +1,35 @@
-import { useReducer, useEffect } from "react";
-import { database } from '../Firebase';
-import {getDoc, doc, docs, query, where, orderBy, onSnapshot, getDocs} from "@firebase/firestore"
+import { useReducer, useEffect } from "react"
 
-
+import { database } from "../Firebase.js"
 
 const ACTIONS = {
-    SELECT_FOLDER: "select-folder",
-    UPDATE_FOLDER: "update-folder",
-    SET_CHILD_FOLDERS: "set-child-folders"
+  SELECT_FOLDER: "select-folder",
+  UPDATE_FOLDER: "update-folder",
+  SET_CHILD_FOLDERS: "set-child-folders",
+  SET_CHILD_FILES: "set-child-files",
 }
 
-const ROOT_FOLDER = { name: "ROOT", id: null, path: [] }
+export const ROOT_FOLDER = { name: "Root", id: null, path: [] }
 
-const reducer = (state, {type, payload}) => {
-    switch(type) {
-        case ACTIONS.SELECT_FOLDER:
-            return {
-                folderId: payload.folderId,
-                folder: payload.folder,
-                childFiles: [],
-                childFolders: []
-
-            }
-        case ACTIONS.UPDATE_FOLDER: 
-            return {
-                ...state,
-                folder: payload.folder
-            }
-        case ACTIONS.SET_CHILD_FOLDERS: 
-            return {
-                ...state,
-                childFolders: payload.childFolders
-            }
+function reducer(state, { type, payload }) {
+  switch (type) {
+    case ACTIONS.SELECT_FOLDER:
+      return {
+        folderId: payload.folderId,
+        folder: payload.folder,
+        childFiles: [],
+        childFolders: [],
+      }
+    case ACTIONS.UPDATE_FOLDER:
+      return {
+        ...state,
+        folder: payload.folder,
+      }
+    case ACTIONS.SET_CHILD_FOLDERS:
+      return {
+        ...state,
+        childFolders: payload.childFolders,
+      }
         default:
             return state
 
@@ -52,61 +50,46 @@ useEffect(() => {
 }, [folderId, folder])
 
 useEffect(() => {
-    if(folderId == null) {
-        return dispatch({
-            type: ACTIONS.UPDATE_FOLDER,
-            payload: {folder: ROOT_FOLDER}
-        })
+    if (folderId == null) {
+      return dispatch({
+        type: ACTIONS.UPDATE_FOLDER,
+        payload: { folder: ROOT_FOLDER },
+      })
     }
 
-    const docRef = doc(database.folders, folderId)
-
-    getDoc(docRef).then(
-         (doc) => {
-            dispatch({
-                type: ACTIONS.UPDATE_FOLDER,
-                payload: {folder: database.formatDoc(doc)}
-            })
-            
-         }
-     ).catch(()=>{
+    database.folders
+      .doc(folderId)
+      .get()
+      .then(doc => {
         dispatch({
-            type: ACTIONS.UPDATE_FOLDER,
-            payload: {folder : ROOT_FOLDER}
+          type: ACTIONS.UPDATE_FOLDER,
+          payload: { folder: database.formatDoc(doc) },
         })
-        
-     })
-}, [folderId])
-
-useEffect(async() => {
-
-    const filterRef = query(database.folders, where("parentId", "==", folderId), where("userId", "==", "Amie29" ), orderBy("createAt"))
-   
-    
-
-    //  return querySnapshot.forEach((doc) => {
-    //     console.log(doc)
-    //     dispatch({
-    //                type: ACTIONS.SET_CHILD_FOLDERS,
-    //                 payload: {childFolders: database.formatDoc(doc)}
-    //            })
-    // })
-
-    // console.log(querySnapshot)
-
-     onSnapshot(filterRef, (snapshot) => {
-
-
-       
+      })
+      .catch(() => {
         dispatch({
-            type: ACTIONS.SET_CHILD_FOLDERS,
-            payload: {childFolders: snapshot.docs.map(database.formatDoc )}
+          type: ACTIONS.UPDATE_FOLDER,
+          payload: { folder: ROOT_FOLDER },
         })
-    })
+      })
+  }, [folderId])
+
+  useEffect(() => {
+    return database.folders
+      .where("parentId", "==", folderId)
+      .where("userId", "==", "Amie29")
+      .orderBy("createdAt")
+      .onSnapshot(snapshot => {
+        dispatch({
+          type: ACTIONS.SET_CHILD_FOLDERS,
+          payload: { childFolders: snapshot.docs.map(database.formatDoc) },
+        })
+      })
+  }, [folderId])
 
  
 
-}, [folderId])
+
 
 return state
 

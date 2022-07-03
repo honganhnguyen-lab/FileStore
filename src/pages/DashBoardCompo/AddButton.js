@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import {addDoc} from "@firebase/firestore"
 
 import {Dialog,DialogTitle, DialogContent, DialogActions, TextField, Button} from "@mui/material";
 import { database } from '../../Firebase';
@@ -14,14 +13,13 @@ const DialogSetName = ({open, setOpen, currentFolder}) => {
 
       if(currentFolder == null) return
       
-       //Create a folder in the database
-        addDoc(database.folders, {
+
+        database.folders.add({
           name: nameNewFolder,
-          parentId: currentFolder.id, 
-          userId: "Amie29", 
-          // path,
-          createdAt: database.getCurrentTimestamp
-        
+          parentId: currentFolder.id,
+          userId:  "Amie29",
+          // path: path,
+          createdAt: database.getCurrentTimestamp(),
         })
 
         setOpen(false);

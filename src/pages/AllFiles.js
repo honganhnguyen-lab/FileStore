@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import axios from 'axios';
 import { Stack,Button, Grid, Typography } from '@mui/material';
 
 import FolderIcon from '@mui/icons-material/Folder';
 import DialogSetName from './DashBoardCompo/AddButton';
 import { useFolder } from '../hooks/useFolder';
+import { useParams } from 'react-router';
 
 
 
 const AllFiles = () => {
+    const history= useHistory();
+    const {folderId} = useParams();
 
-    const {folder, childFolders} = useFolder("ylLcObxQ1WOABdHlJ9Vu");
+    const {folder, childFolders} = useFolder(folderId);
    
-    console.log(childFolders);
 
 
 
@@ -22,6 +23,7 @@ const [open, setOpen] = React.useState(false);
 
 return (
    <Stack direction="column" spacing={2} justifyContent="flex-start" sx={{marginLeft: "30px"}}>
+    
     <Button sx={{width:"220px", border: "1px solid"}} onClick={() => setOpen(true)}>
         + ADD FOLDER
     </Button>
@@ -31,8 +33,8 @@ return (
     <Grid container spacing={3}>
        
         {/* onClick={()=> history.push(`/folder/${item.id}`)} */}
-        {childFolders  && childFolders.map((item) => (
-        <Grid item md={3} xs={3} key={item.id}  >
+        {childFolders.length >0  && childFolders.map((item) => (
+        <Grid item md={3} xs={3} key={item.id} onClick={()=> history.push(`/folder/${item.id}`)}  >
             <Stack 
             direction="column" 
             spacing={1} 
@@ -45,7 +47,7 @@ return (
                 borderRadius: '8px'
             }}>
             <FolderIcon sx={{ fontSize: 40 }} color="primary"/>
-            <Typography variant="h6">{item.name}</Typography>
+            <Typography variant="h6" sx={{maxWidth:"200px", overflow:"hidden", textOverflow: "ellipsis"}}>{item.name}</Typography>
             </Stack>
         </Grid>
          ))} 
