@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 
 import {Dialog,DialogTitle, DialogContent, DialogActions, TextField, Button} from "@mui/material";
 import { database } from '../../Firebase';
+import { ROOT_FOLDER } from '../../hooks/useFolder';
 
 
 const DialogSetName = ({open, setOpen, currentFolder}) => {
@@ -13,14 +14,19 @@ const DialogSetName = ({open, setOpen, currentFolder}) => {
 
       if(currentFolder == null) return
       
+        const path = [...currentFolder.path]
+        if( currentFolder !== ROOT_FOLDER) {
+          path.push({name: currentFolder.name, id: currentFolder.id})
+        }
 
         database.folders.add({
           name: nameNewFolder,
           parentId: currentFolder.id,
           userId:  "Amie29",
-          // path: path,
+          path: path,
           createdAt: database.getCurrentTimestamp(),
         })
+        setNameNewFolder('')
 
         setOpen(false);
       };

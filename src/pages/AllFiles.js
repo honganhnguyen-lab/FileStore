@@ -4,19 +4,20 @@ import { Stack,Button, Grid, Typography } from '@mui/material';
 
 import FolderIcon from '@mui/icons-material/Folder';
 import DialogSetName from './DashBoardCompo/AddButton';
+import FolderBreadCrumbs from './FolderBreadCrumbs';
 import { useFolder } from '../hooks/useFolder';
-import { useParams } from 'react-router';
+import { useParams, useLocation } from 'react-router';
 
 
 
 const AllFiles = () => {
-    const history= useHistory();
-    const {folderId} = useParams();
+const history= useHistory();
+const {folderId} = useParams();
 
-    const {folder, childFolders} = useFolder(folderId);
+const { state = {} } = useLocation();
+
+const {folder, childFolders} = useFolder(folderId, state.folder);
    
-
-
 
 const [open, setOpen] = React.useState(false);
 
@@ -24,7 +25,8 @@ const [open, setOpen] = React.useState(false);
 return (
    <Stack direction="column" spacing={2} justifyContent="flex-start" sx={{marginLeft: "30px"}}>
     
-    <Button sx={{width:"220px", border: "1px solid"}} onClick={() => setOpen(true)}>
+    <FolderBreadCrumbs currentFolder= {folder}/>
+    <Button sx={{width:"220px", border: "1px solid"}} variant="contained" onClick={() => setOpen(true)}>
         + ADD FOLDER
     </Button>
 
