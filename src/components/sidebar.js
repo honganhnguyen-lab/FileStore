@@ -33,7 +33,7 @@ const ListSideBar = [
 ]
 
 const Sidebar = () => {
-  const drawerWidth = 240;
+  const drawerWidth = '15%';
   return (
     <Drawer
       sx={{
@@ -44,13 +44,14 @@ const Sidebar = () => {
           width: drawerWidth,
           boxSizing: "border-box",
           position:'absolute',
-          top:'65px'
+          top:'65px',
+          background:"#e5f0ff"
         },
       }}
       variant="permanent"
       anchor="left"
     >
-      <List sx={{ paddingTop: "30px", fontSize:'16px' }}>
+      <List sx={{ padding: "20px 0px", fontSize:'16px' }}>
         {ListSideBar.map((item) => (
           <ListItem button key={item.title}>
             <ListItemIcon>
