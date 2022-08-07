@@ -1,14 +1,17 @@
 import React, {useState} from 'react'
-import { Button, Typography, Stack } from '@mui/material'
+import { Button, Typography, Stack } from '@mui/material';
+import ReactDOM from 'react-dom'
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {storage, database} from "../../Firebase"
 import {v4 as uuidV4 } from 'uuid'
+import { ProgressBar, Toast } from "react-bootstrap"
 
 import { ROOT_FOLDER } from '../../hooks/useFolder';
-import { maxWidth } from '@mui/system';
+
 
 const AddFileButton = ({currentFolder}) => {
     const [uploadingFiles, setUploadingFiles] = useState([])
+ 
 
     const handleUpload = (e) => {
         const file = e.target.files[0];
@@ -22,9 +25,44 @@ const AddFileButton = ({currentFolder}) => {
         const uploadTask = storage.ref(`/files/Amie29/${filePath}`).put(file)
 
         uploadTask.on('state_changed', snapshot => {
+          const progress = snapshot.bytesTransferred / snapshot.totalBytes
+          setUploadingFiles(prevUploadingFiles => {
+            return prevUploadingFiles.map(uploadFile => {
+              if (uploadFile.id === id) {
+                return { ...uploadFile, progress: progress }
+              }
+  
+              return uploadFile
+            })
+          })
+        }, () => {
+          setUploadingFiles(prevUploadingFiles => {
+            return prevUploadingFiles.map(uploadFile => {
+              if (uploadFile.id === id) {
+                return { ...uploadFile, error: true }
+              }
+              return uploadFile
+            })
+          })
+        }, () => {
 
-        }, () => {}, () => {
+          setUploadingFiles(prevUploadingFiles => {
+            return prevUploadingFiles.filter(uploadFile => {
+              return uploadFile.id !== id
+            })
+          })
+
           uploadTask.snapshot.ref.getDownloadURL().then(url => {
+            database.files
+            .where("name", "==", file.name)
+            .where("userId", "==", 'Amie29')
+            .where("folderId", "==", currentFolder.id)
+            .get()
+            .then(existingFiles => {
+              const existingFile = existingFiles.docs[0]
+              if (existingFile) {
+                existingFile.ref.update({ url: url })
+              } else {
             database.files.add({
               url:url,
               name: file.name,
@@ -32,6 +70,8 @@ const AddFileButton = ({currentFolder}) => {
               folderId: currentFolder.id,
               userId: "Amie29"
             })
+          }
+        })
           })
         } )
     }
@@ -44,14 +84,50 @@ const AddFileButton = ({currentFolder}) => {
     </Button>
 
     {uploadingFiles.length > 0 && (
-      <Stack direction="column" spacing={2} sx={{position: "absolute", bottom: "1rem", right: "1rem", maxWidth: "250px"}}>
-        {uploadingFiles.map((file) => {
-          <Typography variant="caption">{file.name}</Typography>
-          
-        })}
-        
-      </Stack>
-    )}
+      ReactDOM.createPortal(
+        <div
+        style={{
+          position: "absolute",
+          bottom: "1rem",
+          right: "1rem",
+          maxWidth: "250px",
+        }}
+      >
+        {uploadingFiles.map(file => (
+          <Toast
+            key={file.id}
+            onClose={() => {
+              setUploadingFiles(prevUploadingFiles => {
+                return prevUploadingFiles.filter(uploadFile => {
+                  return uploadFile.id !== file.id
+                })
+              })
+            }}
+          >
+            <Toast.Header
+              closeButton={file.error}
+              className="text-truncate w-100 d-block"
+            >
+              {file.name}
+            </Toast.Header>
+            <Toast.Body>
+              <ProgressBar
+                animated={!file.error}
+                variant={file.error ? "danger" : "primary"}
+                now={file.error ? 100 : file.progress * 100}
+                label={
+                  file.error
+                    ? "Error"
+                    : `${Math.round(file.progress * 100)}%`
+                }
+              />
+            </Toast.Body>
+          </Toast>
+        ))}
+      </div>,
+          document.body
+      )
+    )} 
     </>
   )
 }

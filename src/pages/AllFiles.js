@@ -12,12 +12,15 @@ import {
 } from "@mui/material";
 
 import FolderIcon from "@mui/icons-material/Folder";
-import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
+import ArticleIcon from "@mui/icons-material/Article";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DialogSetName from "./DashBoardCompo/AddButton";
 import FolderBreadCrumbs from "./FolderBreadCrumbs";
 import { useFolder } from "../hooks/useFolder";
 import { useParams, useLocation } from "react-router";
 import AddFileButton from "./DashBoardCompo/AddFileButton";
+
+import PopUpActions from "./DashBoardCompo/PopUpActions";
 
 const SmallBox = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -31,6 +34,9 @@ const AllFiles = () => {
   const history = useHistory();
   const { folderId } = useParams();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const [itemId, setItemId] = useState(null)
+
   const [open, setOpen] = useState(false);
 
   const openPopper = Boolean(anchorEl);
@@ -49,30 +55,35 @@ const AllFiles = () => {
     );
   };
 
-  const handleClick = useCallback((event, link) => {
+  const handleClick = useCallback((event, { typeOf, link, id }) => {
     // prevent context menu from opening on right-click
     event.preventDefault();
 
     let message;
-    
+
     // synthetic event
     switch (event.type) {
-      case 'click':
-        return window.open(link)
-       
-      case 'contextmenu':
-        
-        return setAnchorEl(event.currentTarget)
+      case "click":
+        if (typeOf === "file") {
+          return window.open(link);
+        }
+
+      case "contextmenu":
+         setAnchorEl(event.currentTarget);
+         setItemId(id)
+      
     }
 
     // native event
     switch (event.nativeEvent.button) {
       case 0:
-        return window.open(link)
+        if (typeOf === "file") {
+          return window.open(link);
+        }
       case 2:
-        return setAnchorEl(event.currentTarget)
+         setAnchorEl(event.currentTarget);
+         setItemId(id)
     }
-
   }, []);
 
   return (
@@ -94,157 +105,128 @@ const AllFiles = () => {
         <AddFileButton currentFolder={folder} />
       </Stack>
 
-      <DialogSetName open={open} setOpen={setOpen} currentFolder={folder} />
+      
 
-      <Grid container spacing={3}>
-        {/* onClick={()=> history.push(`/folder/${item.id}`)} */}
-        {childFolders.length > 0 &&
-          childFolders.map((item) => (
-            <Grid
-              item
-              md={3}
-              xs={3}
-              key={item.id}
-              onClick={() => history.push(`/folder/${item.id}`)}
-              sx={{ cursor: "pointer" }}
-            >
-              <Stack
-                direction="column"
-                spacing={1}
-                alignItems="center"
-                justifyContent="center"
-                sx={{
-                  minHeight: "12rem",
-                  flex: "1 1 18rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  cursor:"pointer"
-                }}
-                onClick={(e) => {
-                    handleClick(e, item.url);
+      <Stack direction="column" spacing={2}>
+        <Typography variant="h6" sx={{ textAlign: "left" }}>
+          Folders
+        </Typography>
+        <Grid container spacing={3} sx={{ marginTop: "0px !important" }}>
+          {childFolders.length > 0 &&
+            childFolders.map((item) => (
+              <Grid
+                item
+                md={3}
+                xs={3}
+                key={item.id}
+                onClick={() => history.push(`/folder/${item.id}`)}
+                sx={{ cursor: "pointer" }}
+              >
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{
+                    minHeight: "4rem",
+                    flex: "1 1 18rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    position: "relative",
+                  }}
+                  onClick={(e) => {
+                    handleClick(e, { typeOf: "folder", link: item.url, id:item.id });
                   }}
                   onContextMenu={(e) => {
-                    handleClick(e, item.url);
-                  }}
-              >
-                <FolderIcon sx={{ fontSize: 40 }} color="primary" />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    maxWidth: "200px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    handleClick(e, { typeOf: "folder", link: item.url, id:item.id });
                   }}
                 >
-                  {item.name}
-                </Typography>
-              </Stack>
-            </Grid>
-          ))}
-
-        {childFiles.length > 0 &&
-          childFiles.map((item) => (
-            <Grid
-              item
-              md={3}
-              xs={3}
-              key={item.id}
-              onClick={() => history.push(`/folder/${item.id}`)}
-            >
-              <Stack
-                direction="column"
-                spacing={1}
-                alignItems="center"
-                justifyContent="center"
-                onClick={(e) => {
-                  handleClick(e, item.url);
-                }}
-                onContextMenu={(e) => {
-                  handleClick(e, item.url);
-                }}
-                sx={{
-                  minHeight: "12rem",
-                  flex: "1 1 18rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  cursor:"pointer"
-                }}
-              >
-                {isImgLink(item.url) ? (
-                  <Box
-                    sx={{ width: "100%", height: "150px", objectFit: "cover" }}
+                  <FolderIcon sx={{ fontSize: 40 }} color="primary" />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      maxWidth: "200px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
-                    <img width="100%" height="100%" src={item.url} />
-                  </Box>
-                ) : (
-                  <DocumentScannerIcon sx={{ fontSize: 40 }} color="primary" />
-                )}
+                    {item.name}
+                  </Typography>
 
-                <Typography
-                  variant="h6"
+                </Stack>
+              </Grid>
+            ))}
+        </Grid>
+
+        <Typography variant="h6" sx={{ textAlign: "left" }}>
+          Files
+        </Typography>
+        <Grid container spacing={3} sx={{ marginTop: "0px !important" }}>
+          {childFiles.length > 0 &&
+            childFiles.map((item) => (
+              <Grid item md={3} xs={3} key={item.id}>
+                <Stack
+                  direction="column"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={(e) => {
+                    handleClick(e, { typeOf: "file", link: item.url, id: item.id });
+                  }}
+                  onContextMenu={(e) => {
+                    handleClick(e, { typeOf: "file", link: item.url, id: item.id });
+                  }}
                   sx={{
-                    maxWidth: "200px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    maxHeight: "15rem",
+                    flex: "1 1 18rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    cursor: "pointer",
                   }}
                 >
-                  {item.name}
-                </Typography>
-              </Stack>
-            </Grid>
-          ))}
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {isImgLink(item.url) ? (
+                      <img width="100%" height="100%" src={item.url} />
+                    ) : (
+                      <ArticleIcon
+                        sx={{ width: "100%", height: "150px" }}
+                        color="primary"
+                      />
+                    )}
+                  </Box>
+                  <Box
+                    sx={{ width: "100%", height: "30px", overflow: "hidden" }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        maxWidth: "100%",
+                        paddingLeft: "5px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.name}
+                    </Typography>
+                  </Box>
+                </Stack>
 
-        <Popover
-          open={openPopper}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{
-            vertical: "center",
-            horizontal: "center",
-          }}
-          className="popup-button-actions"
-        >
-          <Stack direction="column" spacing={2}>
-            <SmallBox>
-              <Typography
-                variant="caption"
-                color="black"
-                sx={{ fontWeight: 700, fontSize: "0.875rem" }}
-              >
-                Open
-              </Typography>
-            </SmallBox>
-            <SmallBox>
-              <Typography
-                variant="caption"
-                color="black"
-                sx={{ fontWeight: 700, fontSize: "0.875rem" }}
-              >
-                Detail
-              </Typography>
-            </SmallBox>
-            <SmallBox>
-              <Typography
-                variant="caption"
-                color="black"
-                sx={{ fontWeight: 700, fontSize: "0.875rem" }}
-              >
-                Rename
-              </Typography>
-            </SmallBox>
-            <SmallBox>
-              <Typography
-                variant="caption"
-                color="black"
-                sx={{ fontWeight: 700, fontSize: "0.875rem" }}
-              >
-                Delete
-              </Typography>
-            </SmallBox>
+              </Grid>
+            ))}
+        </Grid>
+        <PopUpActions openPopper={openPopper} anchorEl={anchorEl} setAnchorEl={setAnchorEl} id={itemId}/>
 
-          </Stack>
-        </Popover>
-      </Grid>
+
+      </Stack>
     </Stack>
   );
 };
