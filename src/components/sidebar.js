@@ -1,39 +1,67 @@
-import React from "react";
+import React,{useState} from "react";
 import {
   Drawer,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
+  experimentalStyled as styled
 } from "@mui/material";
 
 import MailIcon from "@mui/icons-material/Mail";
 import StarIcon from '@mui/icons-material/Star';
 import ShareIcon from '@mui/icons-material/Share';
 import DeleteIcon from '@mui/icons-material/Delete'
+import { useHistory } from 'react-router';
+
+const StyledList = styled(List)(({theme}) => ({
+  '&& .Mui-selected, && .Mui-selected:hover': {
+    backgroundColor: '#3676cb',
+    color:"white"
+
+  },
+  // hover states
+  '& .MuiListItemButton-root:hover': {
+    backgroundColor: 'white',
+    '&, & .MuiListItemIcon-root': {
+      color: 'blue',
+    },
+  },
+
+ }))
 
 
 const ListSideBar = [
   {
+  id: '1',
   title:'All Files',
+  url: "/",
   icon: <MailIcon/>
   },
   {
+    id: '2',
     title: 'Starred',
+    url:"/starred",
     icon: <StarIcon/>
   },
   {
-    title: 'Shared',
-    icon: <ShareIcon/>
-  },
-  {
+    id: '3',
+    url: "/delete",
     title: 'Trash',
     icon: <DeleteIcon/>
   }
 ]
 
-const Sidebar = () => {
+const Sidebar = ({selectedBar}) => {
+  let history = useHistory();
+
   const drawerWidth = '15%';
+
+
+  const onClickChoose = (url) => {
+   
+    history.push(url)
+  }
   return (
     <Drawer
       sx={{
@@ -51,16 +79,16 @@ const Sidebar = () => {
       variant="permanent"
       anchor="left"
     >
-      <List sx={{ padding: "20px 0px", fontSize:'16px' }}>
+      <StyledList sx={{ padding: "20px 0px", fontSize:'16px' }}>
         {ListSideBar.map((item) => (
-          <ListItem button key={item.title}>
+          <ListItemButton key={item.id} onClick={()=>{onClickChoose(item.url)}} selected={selectedBar === item.id}>
             <ListItemIcon>
               {item.icon}
             </ListItemIcon>
             <ListItemText primary={item.title} />
-          </ListItem>
+          </ListItemButton>
         ))}
-      </List>
+      </StyledList>
     </Drawer>
   );
 };

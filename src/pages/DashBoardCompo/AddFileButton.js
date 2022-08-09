@@ -70,7 +70,8 @@ const AddFileButton = ({currentFolder}) => {
               folderId: currentFolder.id,
               userId: "Amie29",
               isStarred: false,
-              isTrash: false
+              isTrash: false,
+              type: "file"
             })
           }
         })

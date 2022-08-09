@@ -26,7 +26,8 @@ const DialogSetName = ({open, setOpen, currentFolder}) => {
           path: path,
           createdAt: database.getCurrentTimestamp(),
           isStarred: false,
-          isTrash: false
+          isTrash: false,
+          type:"folder"
         })
         setNameNewFolder('')
 
