@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import {
   experimentalStyled as styled,
@@ -11,9 +11,10 @@ import {
   Popover,
 } from "@mui/material";
 
+
 import FolderIcon from "@mui/icons-material/Folder";
 import ArticleIcon from "@mui/icons-material/Article";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+
 import DialogSetName from "./DashBoardCompo/AddButton";
 import FolderBreadCrumbs from "./FolderBreadCrumbs";
 import { useFolder } from "../hooks/useFolder";
@@ -21,6 +22,7 @@ import { useParams, useLocation } from "react-router";
 import AddFileButton from "./DashBoardCompo/AddFileButton";
 
 import PopUpActions from "./DashBoardCompo/PopUpActions";
+import { database } from "../Firebase";
 
 const SmallBox = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -35,7 +37,7 @@ const AllFiles = () => {
   const { folderId } = useParams();
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [itemId, setItemId] = useState(null)
+  const [itemId, setItemId] = useState({id: null, isFolder: false})
 
   const [open, setOpen] = useState(false);
 
@@ -70,7 +72,12 @@ const AllFiles = () => {
 
       case "contextmenu":
          setAnchorEl(event.currentTarget);
-         setItemId(id)
+         if(typeOf === 'file'){
+          setItemId({id, isFolder: false})
+         } else{
+          setItemId({id, isFolder: true})
+         }
+         
       
     }
 
@@ -82,9 +89,33 @@ const AllFiles = () => {
         }
       case 2:
          setAnchorEl(event.currentTarget);
-         setItemId(id)
+         if(typeOf === 'file'){
+          setItemId({id, isFolder: false})
+         } else{
+          setItemId({id, isFolder: true})
+         }
     }
   }, []);
+
+  const [itemData, setItemData] = useState({});
+
+  const [itemFolder, setItemFolder] = useState({});
+ 
+  useEffect(async () => {
+    await database.files
+      .doc(`${itemId.id}`)
+      .get()
+      .then((snapshot) => setItemData(snapshot.data()));
+  }, [itemId])
+  
+  useEffect(async () => {
+    await database.folders
+    .doc(`${itemId.id}`)
+    .get()
+    .then((snapshot) => setItemFolder(snapshot.data()));
+  },[itemId])
+
+
 
   return (
     <Stack
@@ -223,7 +254,7 @@ const AllFiles = () => {
               </Grid>
             ))}
         </Grid>
-        <PopUpActions openPopper={openPopper} anchorEl={anchorEl} setAnchorEl={setAnchorEl} id={itemId}/>
+        <PopUpActions openPopper={openPopper} anchorEl={anchorEl} setAnchorEl={setAnchorEl} itemData={itemId.isFolder ? itemFolder : itemData} itemId={itemId}  />
 
 
       </Stack>

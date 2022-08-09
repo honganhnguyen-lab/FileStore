@@ -11,10 +11,15 @@ import {
   ListItemIcon,
   Popover,
   ListItemButton,
+
+  TextField,
+  
 } from "@mui/material";
-import FolderIcon from "@mui/icons-material/Folder";
-import ArticleIcon from "@mui/icons-material/Article";
+
+import EditIcon from '@mui/icons-material/Edit';
+
 import { database } from "../../Firebase";
+
 
 const SmallBox = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -24,24 +29,56 @@ const SmallBox = styled(Button)(({ theme }) => ({
   paddingLeft: theme.spacing(3),
 }));
 
-const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, id }) => {
+const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+
+
+  const [open, setOpen] = useState(false);
 
   const toggleDrawer = (e, open) => {
     setAnchorEl(null);
     setDrawerOpen(open);
+    setOpen(false)
   };
 
-  const [itemData, setItemData] = useState({});
 
-  console.log(itemData)
+  const [nameField, setNameField] = useState('');
 
-  useEffect(() => {
-    database.files
-      .doc(`${id}`)
-      .get()
-      .then((snapshot) => setItemData(snapshot.data()));
-  }, [id]);
+
+  useEffect(()=>{
+    setNameField(itemData && itemData.name);
+  },[itemData])
+
+
+  const handleUpdateField = async(data) => {
+    if(itemId.isFolder){
+      await database.folders
+      .doc(`${itemId.id}`)
+      .update({name: data})
+      
+    }else{
+    await database.files
+    .doc(`${itemId.id}`)
+    .update({name: data})
+    }
+   setOpen(false)
+   setDrawerOpen(false)
+   
+
+  }
+
+ 
+
+ 
+
+ const convert = (str) => {
+    var date = new Date(str),
+      mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+      day = ("0" + date.getDate()).slice(-2);
+    return [day, mnth, date.getFullYear()].join("/");
+  }
+
 
   return (
     <>
@@ -62,7 +99,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, id }) => {
               color="black"
               sx={{ fontWeight: 700, fontSize: "0.875rem" }}
               onClick={() => {
-                console.log(id);
+                window.open(itemData && itemData.url)
               }}
             >
               Open
@@ -80,15 +117,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, id }) => {
               Detail
             </Typography>
           </SmallBox>
-          <SmallBox>
-            <Typography
-              variant="caption"
-              color="black"
-              sx={{ fontWeight: 700, fontSize: "0.875rem" }}
-            >
-              Rename
-            </Typography>
-          </SmallBox>
+
           <SmallBox>
             <Typography
               variant="caption"
@@ -112,26 +141,59 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, id }) => {
         <Box sx={{width:'100%', height: "45px", backgroundColor:"#1b3b65",color:"white"}}>
            <Typography variant="h5" textAlign="center" padding={1}>DETAIL</Typography>
         </Box>
+       
         <ListItem>
+       
           <ListItemButton>
+
           <ListItemIcon>
-            <FolderIcon/>
+            <EditIcon onClick={()=> setOpen(true)}/>
           </ListItemIcon>
           <ListItemText>
-            {itemData.name}
+            
+            { itemData && itemData.name}
           </ListItemText>
           </ListItemButton>
         </ListItem>
+
         <ListItem >
           <ListItemText>
-            Ngay tao
+            <b>Owner: </b> 
           </ListItemText>
           <ListItemText>
-            12/03/2020
+            {itemData && itemData.userId}
           </ListItemText>
         </ListItem>
+
+        <ListItem >
+          <ListItemText>
+            <b>Create at: </b>
+          </ListItemText>
+          <ListItemText>
+            {itemData && convert(Date(itemData.createAt))}
+          </ListItemText>
+        </ListItem>
+
+        {open && (
+          <Stack direction="column" spacing={2} mt={5}>
+            <TextField variant="filled" value={nameField} onChange={(e)=>{setNameField(e.target.value)}}/>
+
+            <Button variant="contained" onClick={()=> handleUpdateField(nameField)}>Change</Button>
+          </Stack>
+        )}
        </Box>
       </Drawer>
+
+      {/* <Dialog
+      open={open}
+      onClose={() => setOpen(false)}
+      >
+        <DialogTitle>Rename Item</DialogTitle>
+          <Stack direction="column" spacing={2}>
+            <TextField value ={nameField} onChange={(e) => setNameField(e.target.value)}/>
+            <Button variant="contained" >Change</Button>
+          </Stack>
+      </Dialog> */}
     </>
   );
 };
