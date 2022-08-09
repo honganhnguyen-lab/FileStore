@@ -27,7 +27,7 @@ const ListSideBar = [
     icon: <ShareIcon/>
   },
   {
-    title: 'Deleted',
+    title: 'Trash',
     icon: <DeleteIcon/>
   }
 ]

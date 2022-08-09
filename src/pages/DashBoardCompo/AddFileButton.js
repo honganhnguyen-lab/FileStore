@@ -68,7 +68,9 @@ const AddFileButton = ({currentFolder}) => {
               name: file.name,
               createdAt: database.getCurrentTimestamp(),
               folderId: currentFolder.id,
-              userId: "Amie29"
+              userId: "Amie29",
+              isStarred: false,
+              isTrash: false
             })
           }
         })

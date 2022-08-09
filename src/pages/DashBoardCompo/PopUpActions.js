@@ -18,6 +18,7 @@ import {
 
 import EditIcon from '@mui/icons-material/Edit';
 
+
 import { database } from "../../Firebase";
 
 
@@ -25,22 +26,34 @@ const SmallBox = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
   width: "100%",
   borderRadius: 0,
-  justifyContent: "left",
-  paddingLeft: theme.spacing(3),
+  justifyContent: "center",
+  // paddingLeft: theme.spacing(3),
 }));
 
-const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId }) => {
+const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onClickStarred, onClickTrashed }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
 
 
   const [open, setOpen] = useState(false);
 
+
+
   const toggleDrawer = (e, open) => {
     setAnchorEl(null);
     setDrawerOpen(open);
     setOpen(false)
   };
+
+  const handleClickStarred = (e) => {
+    setAnchorEl(null);
+    onClickStarred(!itemData.isStarred)
+  }
+
+  const handleClickTrashed = (e) => {
+    setAnchorEl(null);
+    onClickTrashed(!itemData.isTrash)
+  }
 
 
   const [nameField, setNameField] = useState('');
@@ -64,13 +77,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId }) =
     }
    setOpen(false)
    setDrawerOpen(false)
-   
-
   }
-
- 
-
- 
 
  const convert = (str) => {
     var date = new Date(str),
@@ -123,8 +130,20 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId }) =
               variant="caption"
               color="black"
               sx={{ fontWeight: 700, fontSize: "0.875rem" }}
+              onClick={handleClickStarred}
             >
-              Delete
+              Star
+            </Typography>
+          </SmallBox>
+
+          <SmallBox>
+            <Typography
+              variant="caption"
+              color="black"
+              sx={{ fontWeight: 700, fontSize: "0.875rem" }}
+              onClick={handleClickTrashed}
+            >
+              Trash
             </Typography>
           </SmallBox>
         </Stack>

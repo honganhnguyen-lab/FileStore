@@ -11,9 +11,9 @@ import {
   Popover,
 } from "@mui/material";
 
-
 import FolderIcon from "@mui/icons-material/Folder";
 import ArticleIcon from "@mui/icons-material/Article";
+import StarIcon from "@mui/icons-material/Star";
 
 import DialogSetName from "./DashBoardCompo/AddButton";
 import FolderBreadCrumbs from "./FolderBreadCrumbs";
@@ -37,7 +37,7 @@ const AllFiles = () => {
   const { folderId } = useParams();
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [itemId, setItemId] = useState({id: null, isFolder: false})
+  const [itemId, setItemId] = useState({ id: null, isFolder: false });
 
   const [open, setOpen] = useState(false);
 
@@ -45,10 +45,32 @@ const AllFiles = () => {
 
   const { state = {} } = useLocation();
 
+  const onClickStarred = async (data) => {
+    if (itemId.isFolder) {
+      await database.folders.doc(`${itemId.id}`).update({ isStarred: data });
+    } else {
+      await database.files.doc(`${itemId.id}`).update({ isStarred: data });
+    }
+  };
+
+  const onClickTrashed = async (data) => {
+    if (itemId.isFolder) {
+      await database.folders.doc(`${itemId.id}`).update({ isTrash: data });
+    } else {
+      await database.files.doc(`${itemId.id}`).update({ isTrash: data });
+    }
+  };
+
   const { folder, childFolders, childFiles } = useFolder(
     folderId,
     state.folder
   );
+
+  const filterNotTrashedFolders =
+    childFolders.length > 0 &&
+    childFolders.filter((item) => item.isTrash !== true);
+  const filterNotTrashedFiles =
+    childFiles.length > 0 && childFiles.filter((item) => item.isTrash !== true);
 
   const isImgLink = (url) => {
     if (typeof url !== "string") return false;
@@ -71,14 +93,12 @@ const AllFiles = () => {
         }
 
       case "contextmenu":
-         setAnchorEl(event.currentTarget);
-         if(typeOf === 'file'){
-          setItemId({id, isFolder: false})
-         } else{
-          setItemId({id, isFolder: true})
-         }
-         
-      
+        setAnchorEl(event.currentTarget);
+        if (typeOf === "file") {
+          setItemId({ id, isFolder: false });
+        } else {
+          setItemId({ id, isFolder: true });
+        }
     }
 
     // native event
@@ -88,34 +108,32 @@ const AllFiles = () => {
           return window.open(link);
         }
       case 2:
-         setAnchorEl(event.currentTarget);
-         if(typeOf === 'file'){
-          setItemId({id, isFolder: false})
-         } else{
-          setItemId({id, isFolder: true})
-         }
+        setAnchorEl(event.currentTarget);
+        if (typeOf === "file") {
+          setItemId({ id, isFolder: false });
+        } else {
+          setItemId({ id, isFolder: true });
+        }
     }
   }, []);
 
   const [itemData, setItemData] = useState({});
 
   const [itemFolder, setItemFolder] = useState({});
- 
+
   useEffect(async () => {
     await database.files
       .doc(`${itemId.id}`)
       .get()
       .then((snapshot) => setItemData(snapshot.data()));
-  }, [itemId])
-  
+  }, [itemId]);
+
   useEffect(async () => {
     await database.folders
-    .doc(`${itemId.id}`)
-    .get()
-    .then((snapshot) => setItemFolder(snapshot.data()));
-  },[itemId])
-
-
+      .doc(`${itemId.id}`)
+      .get()
+      .then((snapshot) => setItemFolder(snapshot.data()));
+  }, [itemId]);
 
   return (
     <Stack
@@ -133,18 +151,19 @@ const AllFiles = () => {
         >
           + ADD FOLDER
         </Button>
+
         <AddFileButton currentFolder={folder} />
       </Stack>
 
-      
+      <DialogSetName open={open} setOpen={setOpen} currentFolder={folder} />
 
       <Stack direction="column" spacing={2}>
         <Typography variant="h6" sx={{ textAlign: "left" }}>
           Folders
         </Typography>
         <Grid container spacing={3} sx={{ marginTop: "0px !important" }}>
-          {childFolders.length > 0 &&
-            childFolders.map((item) => (
+          {filterNotTrashedFolders.length > 0 &&
+            filterNotTrashedFolders.map((item) => (
               <Grid
                 item
                 md={3}
@@ -167,12 +186,26 @@ const AllFiles = () => {
                     position: "relative",
                   }}
                   onClick={(e) => {
-                    handleClick(e, { typeOf: "folder", link: item.url, id:item.id });
+                    handleClick(e, {
+                      typeOf: "folder",
+                      link: item.url,
+                      id: item.id,
+                    });
                   }}
                   onContextMenu={(e) => {
-                    handleClick(e, { typeOf: "folder", link: item.url, id:item.id });
+                    handleClick(e, {
+                      typeOf: "folder",
+                      link: item.url,
+                      id: item.id,
+                    });
                   }}
                 >
+                  {item.isStarred && (
+                    <StarIcon
+                      sx={{ position: "absolute", top: 0, right: 0 }}
+                      color="warning"
+                    />
+                  )}
                   <FolderIcon sx={{ fontSize: 40 }} color="primary" />
                   <Typography
                     variant="h6"
@@ -184,7 +217,6 @@ const AllFiles = () => {
                   >
                     {item.name}
                   </Typography>
-
                 </Stack>
               </Grid>
             ))}
@@ -194,8 +226,8 @@ const AllFiles = () => {
           Files
         </Typography>
         <Grid container spacing={3} sx={{ marginTop: "0px !important" }}>
-          {childFiles.length > 0 &&
-            childFiles.map((item) => (
+          {filterNotTrashedFiles.length > 0 &&
+            filterNotTrashedFiles.map((item) => (
               <Grid item md={3} xs={3} key={item.id}>
                 <Stack
                   direction="column"
@@ -203,10 +235,18 @@ const AllFiles = () => {
                   alignItems="center"
                   justifyContent="center"
                   onClick={(e) => {
-                    handleClick(e, { typeOf: "file", link: item.url, id: item.id });
+                    handleClick(e, {
+                      typeOf: "file",
+                      link: item.url,
+                      id: item.id,
+                    });
                   }}
                   onContextMenu={(e) => {
-                    handleClick(e, { typeOf: "file", link: item.url, id: item.id });
+                    handleClick(e, {
+                      typeOf: "file",
+                      link: item.url,
+                      id: item.id,
+                    });
                   }}
                   sx={{
                     maxHeight: "15rem",
@@ -214,6 +254,7 @@ const AllFiles = () => {
                     border: "1px solid #ddd",
                     borderRadius: "8px",
                     cursor: "pointer",
+                    position: "relative",
                   }}
                 >
                   <Box
@@ -224,6 +265,12 @@ const AllFiles = () => {
                       justifyContent: "center",
                     }}
                   >
+                    {item.isStarred && (
+                      <StarIcon
+                        sx={{ position: "absolute", top: 0, right: 0 }}
+                        color="warning"
+                      />
+                    )}
                     {isImgLink(item.url) ? (
                       <img width="100%" height="100%" src={item.url} />
                     ) : (
@@ -250,13 +297,18 @@ const AllFiles = () => {
                     </Typography>
                   </Box>
                 </Stack>
-
               </Grid>
             ))}
         </Grid>
-        <PopUpActions openPopper={openPopper} anchorEl={anchorEl} setAnchorEl={setAnchorEl} itemData={itemId.isFolder ? itemFolder : itemData} itemId={itemId}  />
-
-
+        <PopUpActions
+          openPopper={openPopper}
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+          itemData={itemId.isFolder ? itemFolder : itemData}
+          itemId={itemId}
+          onClickStarred={onClickStarred}
+          onClickTrashed={onClickTrashed}
+        />
       </Stack>
     </Stack>
   );

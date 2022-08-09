@@ -25,6 +25,8 @@ const DialogSetName = ({open, setOpen, currentFolder}) => {
           userId:  "Amie29",
           path: path,
           createdAt: database.getCurrentTimestamp(),
+          isStarred: false,
+          isTrash: false
         })
         setNameNewFolder('')
 
