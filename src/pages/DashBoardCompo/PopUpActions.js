@@ -39,6 +39,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onC
 
 
 
+
   const toggleDrawer = (e, open) => {
     setAnchorEl(null);
     setDrawerOpen(open);
@@ -62,6 +63,10 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onC
   useEffect(()=>{
     setNameField(itemData && itemData.name);
   },[itemData])
+
+  useEffect(()=> {
+    setAnchorEl(null)
+  },[])
 
 
   const handleUpdateField = async(data) => {

@@ -45,6 +45,7 @@ const AllFiles = () => {
 
   const { state = {} } = useLocation();
 
+
   const onClickStarred = async (data) => {
     if (itemId.isFolder) {
       await database.folders.doc(`${itemId.id}`).update({ isStarred: data });
@@ -79,18 +80,32 @@ const AllFiles = () => {
     );
   };
 
+  const rightClick = (link, id, typeOf) => {
+    
+    if (typeOf === "file") {
+      return window.open(link);
+    }else{
+      history.push(`/folder/${id}`)
+    }
+    setAnchorEl(null)
+  }
+
+
   const handleClick = useCallback((event, { typeOf, link, id }) => {
     // prevent context menu from opening on right-click
     event.preventDefault();
 
-    let message;
-
     // synthetic event
     switch (event.type) {
       case "click":
+        setAnchorEl(null)
         if (typeOf === "file") {
           return window.open(link);
+        }else{
+          history.push(`/folder/${id}`)
         }
+
+      
 
       case "contextmenu":
         setAnchorEl(event.currentTarget);
@@ -99,14 +114,20 @@ const AllFiles = () => {
         } else {
           setItemId({ id, isFolder: true });
         }
+        setAnchorEl(null)
     }
 
     // native event
+    
     switch (event.nativeEvent.button) {
       case 0:
+        setAnchorEl(null)
         if (typeOf === "file") {
-          return window.open(link);
+           window.open(link);
+        }else{
+          history.push(`/folder/${id}`)
         }
+       
       case 2:
         setAnchorEl(event.currentTarget);
         if (typeOf === "file") {
@@ -114,7 +135,9 @@ const AllFiles = () => {
         } else {
           setItemId({ id, isFolder: true });
         }
+        
     }
+ 
   }, []);
 
   const [itemData, setItemData] = useState({});
@@ -134,6 +157,10 @@ const AllFiles = () => {
       .get()
       .then((snapshot) => setItemFolder(snapshot.data()));
   }, [itemId]);
+
+  useEffect(()=> {
+    setAnchorEl(null)
+  },[])
 
   return (
     <Stack
@@ -169,7 +196,7 @@ const AllFiles = () => {
                 md={3}
                 xs={3}
                 key={item.id}
-                onClick={() => history.push(`/folder/${item.id}`)}
+              
                 sx={{ cursor: "pointer" }}
               >
                 <Stack
@@ -185,12 +212,9 @@ const AllFiles = () => {
                     cursor: "pointer",
                     position: "relative",
                   }}
-                  onClick={(e) => {
-                    handleClick(e, {
-                      typeOf: "folder",
-                      link: item.url,
-                      id: item.id,
-                    });
+                  onClick={() => {
+                    rightClick(item.url, item.id, item.type)
+ 
                   }}
                   onContextMenu={(e) => {
                     handleClick(e, {
@@ -234,12 +258,9 @@ const AllFiles = () => {
                   spacing={1}
                   alignItems="center"
                   justifyContent="center"
-                  onClick={(e) => {
-                    handleClick(e, {
-                      typeOf: "file",
-                      link: item.url,
-                      id: item.id,
-                    });
+                  onClick={() => {
+                    rightClick(item.url, item.id, item.type)
+ 
                   }}
                   onContextMenu={(e) => {
                     handleClick(e, {
