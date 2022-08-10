@@ -85,12 +85,13 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onC
   }
 
  const convert = (str) => {
-    var date = new Date(str),
-      mnth = ("0" + (date.getMonth() + 1)).slice(-2),
-      day = ("0" + date.getDate()).slice(-2);
+    var checkOut = str && str.seconds *1000
+    var date = new Date(checkOut),
+      mnth = date.getMonth()+1,
+      day = date.getDate();
+
     return [day, mnth, date.getFullYear()].join("/");
   }
-
 
   return (
     <>
@@ -194,7 +195,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onC
             <b>Create at: </b>
           </ListItemText>
           <ListItemText>
-            {itemData && convert(Date(itemData.createAt))}
+            {itemData && itemData.createdAt && convert(itemData.createdAt)}
           </ListItemText>
         </ListItem>
 
@@ -208,16 +209,7 @@ const PopUpActions = ({ openPopper, anchorEl, setAnchorEl, itemData, itemId, onC
        </Box>
       </Drawer>
 
-      {/* <Dialog
-      open={open}
-      onClose={() => setOpen(false)}
-      >
-        <DialogTitle>Rename Item</DialogTitle>
-          <Stack direction="column" spacing={2}>
-            <TextField value ={nameField} onChange={(e) => setNameField(e.target.value)}/>
-            <Button variant="contained" >Change</Button>
-          </Stack>
-      </Dialog> */}
+
     </>
   );
 };

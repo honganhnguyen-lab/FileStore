@@ -1,0 +1,13 @@
+1. Clone project bằng câu lệnh: git clone "Đường dẫn link git"
+2. Mở 2 terminal
+3. Terminal1: chạy câu lệnh 
+json-server --watch db.json --port 3004 
+để khởi tạo api login
+4. Chạy câu lệnh 
+npm install
+để tải các module về
+5. Chạy câu lệnh 
+npm start
+để bắt đầu project
+
+6. Đường dẫn đến file git : https://github.com/honganhnguyen-lab/FileStore
